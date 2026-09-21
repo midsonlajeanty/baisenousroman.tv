@@ -234,8 +234,8 @@
                 class="screen__control"
                 id="playback"
                 type="button"
-                aria-label="Pause"
-                title="Pause"
+                aria-label="Pause (espace)"
+                title="Pause (espace)"
               >
                 <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M8 5v14M16 5v14" />
@@ -248,8 +248,8 @@
                 class="screen__control"
                 id="zap"
                 type="button"
-                aria-label="Zapper"
-                title="Zapper"
+                aria-label="Zapper (N)"
+                title="Zapper (N)"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
@@ -286,6 +286,17 @@
               </button>
               <button
                 class="screen__control"
+                id="share"
+                type="button"
+                aria-label="Partager la chaîne"
+                title="Partager la chaîne"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v13M7 8l5-5 5 5" />
+                </svg>
+              </button>
+              <button
+                class="screen__control"
                 id="fullscreen"
                 type="button"
                 aria-label="Plein écran"
@@ -302,6 +313,7 @@
             <p class="screen__sound-hint" aria-hidden="true">
               Son coupé. Touchez l'écran, Roman vous attend.
             </p>
+            <p class="screen__toast" id="toast" role="status"></p>
             <div class="screen__progress">
               <div id="progress"></div>
             </div>

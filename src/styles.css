@@ -552,6 +552,34 @@ h2 {
   display: block;
 }
 
+.screen__toast {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid rgba(232, 176, 75, 0.6);
+  border-radius: 999px;
+  background: rgba(6, 12, 28, 0.7);
+  backdrop-filter: blur(6px);
+  color: var(--paper);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+[data-toast="true"] .screen__toast {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .screen__sound-hint {
   position: absolute;
   top: 14px;

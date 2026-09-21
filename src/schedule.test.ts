@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { markWatched, nextIndex, programmeOrder, shuffle, upcoming } from "./schedule.ts";
+import {
+  markWatched,
+  nextIndex,
+  programmeOrder,
+  shuffle,
+  startWith,
+  upcoming,
+} from "./schedule.ts";
 
 const catalog = ["a", "b", "c", "d"].map((id) => ({ id, title: id.toUpperCase() }));
 const ids = (videos: readonly { id: string }[]) => videos.map((video) => video.id);
@@ -42,5 +49,16 @@ describe("programme", () => {
   it("wraps around the end of the catalog", () => {
     expect(nextIndex(3, 4)).toBe(0);
     expect(ids(upcoming(catalog, 3).map((slot) => slot.video))).toEqual(["d", "a", "b"]);
+  });
+});
+
+describe("startWith", () => {
+  it("opens on the requested video and keeps the rest in order", () => {
+    expect(ids(startWith(catalog, "c"))).toEqual(["c", "a", "b", "d"]);
+  });
+
+  it("ignores an unknown or missing video", () => {
+    expect(ids(startWith(catalog, "gone"))).toEqual(["a", "b", "c", "d"]);
+    expect(ids(startWith(catalog, null))).toEqual(["a", "b", "c", "d"]);
   });
 });

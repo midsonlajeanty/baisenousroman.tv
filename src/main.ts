@@ -1,6 +1,6 @@
 import "./styles.css";
 import { createChannel, type OffAirReason } from "./player.ts";
-import { markWatched, programmeOrder, upcoming } from "./schedule.ts";
+import { markWatched, programmeOrder, startWith, upcoming } from "./schedule.ts";
 import { loadCatalog } from "./videos.ts";
 
 type ScreenState = "loading" | "blocked" | "direct" | "playing" | "offair";
@@ -12,6 +12,9 @@ const OFF_AIR_HINTS: Record<OffAirReason, string> = {
 };
 
 const TUNE_IN_GRACE_MS = 1500;
+const TOAST_MS = 2600;
+const VIDEO_PARAM = "v";
+const SITE_NAME = "BAISE NOUS ROMAN.TV";
 const PROGRESS_INTERVAL_MS = 1000;
 
 function byId<T extends HTMLElement>(id: string): T {
@@ -30,6 +33,8 @@ const zapButton = byId<HTMLButtonElement>("zap");
 const playbackButton = byId<HTMLButtonElement>("playback");
 const fullscreenButton = byId<HTMLButtonElement>("fullscreen");
 const captionsButton = byId<HTMLButtonElement>("captions");
+const shareButton = byId<HTMLButtonElement>("share");
+const toast = byId("toast");
 const controls = byId("controls");
 const progressBar = byId("progress");
 const scheduleList = byId<HTMLOListElement>("schedule");
@@ -77,7 +82,8 @@ let captionsOn = readCaptions();
 
 const fullCatalog = loadCatalog();
 let watched = readWatched();
-const catalog = programmeOrder(fullCatalog, watched);
+const requestedVideo = new URLSearchParams(window.location.search).get(VIDEO_PARAM);
+const catalog = startWith(programmeOrder(fullCatalog, watched), requestedVideo);
 let current = 0;
 let startedAt = Date.now();
 let remainingMs: number | null = null;
@@ -88,21 +94,21 @@ function setState(state: ScreenState): void {
 
 function setPaused(paused: boolean): void {
   frame.dataset.paused = String(paused);
-  const label = paused ? "Reprendre" : "Pause";
+  const label = paused ? "Reprendre (espace)" : "Pause (espace)";
   playbackButton.setAttribute("aria-label", label);
   playbackButton.title = label;
 }
 
 function setMuted(muted: boolean): void {
   frame.dataset.muted = String(muted);
-  const label = muted ? "Activer le son" : "Couper le son";
+  const label = muted ? "Activer le son (M)" : "Couper le son (M)";
   soundButton.setAttribute("aria-label", label);
   soundButton.title = label;
 }
 
 function setCaptions(on: boolean): void {
   frame.dataset.captions = String(on);
-  const label = on ? "Désactiver les sous-titres" : "Activer les sous-titres";
+  const label = on ? "Désactiver les sous-titres (C)" : "Activer les sous-titres (C)";
   captionsButton.setAttribute("aria-pressed", String(on));
   captionsButton.setAttribute("aria-label", label);
   captionsButton.title = label;
@@ -150,7 +156,10 @@ function showProgram(index: number): void {
   current = index;
   startedAt = Date.now();
   remainingMs = null;
-  const { title } = catalog[index]!;
+  const { id, title } = catalog[index]!;
+  const address = new URL(window.location.href);
+  address.searchParams.set(VIDEO_PARAM, id);
+  window.history.replaceState(null, "", address);
   nowTitle.textContent = title;
   idleTitle.textContent = title;
   progressBar.style.setProperty("--progress", "0");
@@ -272,8 +281,77 @@ frame.addEventListener("click", () => {
 
 controls.addEventListener("click", (event) => event.stopPropagation());
 
+let toastTimer: number | undefined;
+
+function showToast(message: string): void {
+  toast.textContent = message;
+  frame.dataset.toast = "true";
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    frame.dataset.toast = "false";
+  }, TOAST_MS);
+}
+
+async function shareChannel(): Promise<void> {
+  const video = catalog[current];
+  const url = new URL("/", window.location.origin);
+  if (video) url.searchParams.set(VIDEO_PARAM, video.id);
+  const text = video
+    ? `« ${video.title} » passe sur ${SITE_NAME}. Il va vous avoir aussi.`
+    : `${SITE_NAME}, la chaîne qui ne diffuse que Roman Frayssinet.`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: SITE_NAME, text, url: url.href });
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url.href);
+    showToast("Lien copié. À vous de les avoir.");
+  } catch {
+    showToast(url.href);
+  }
+}
+
+function toggleCaptions(): void {
+  captionsOn = !captionsOn;
+  setCaptions(captionsOn);
+  saveCaptions(captionsOn);
+  channel.setCaptions(captionsOn);
+}
+
+const SHORTCUTS: Record<string, () => void> = {
+  " ": () => channel.togglePlayback(),
+  k: () => channel.togglePlayback(),
+  m: toggleSound,
+  f: toggleFullscreen,
+  n: () => channel.zap(),
+  c: toggleCaptions,
+};
+
+function shortcutFor(event: KeyboardEvent): (() => void) | undefined {
+  if (event.ctrlKey || event.metaKey || event.altKey) return undefined;
+  const target = event.target;
+  if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable]"))
+    return undefined;
+  if (event.key === " " && target instanceof HTMLButtonElement) return undefined;
+  return SHORTCUTS[event.key.toLowerCase()];
+}
+
+document.addEventListener("keydown", (event) => {
+  const action = shortcutFor(event);
+  if (!action || frame.dataset.state !== "playing") return;
+  event.preventDefault();
+  action();
+});
+
 function unmuteOnFirstGesture(event: Event): void {
   if (frame.contains(event.target as Node)) return;
+  if (event instanceof KeyboardEvent && shortcutFor(event)) return;
   if (frame.dataset.state !== "playing" || frame.dataset.muted !== "true") return;
   document.removeEventListener("pointerdown", unmuteOnFirstGesture);
   document.removeEventListener("keydown", unmuteOnFirstGesture);
@@ -285,12 +363,8 @@ document.addEventListener("keydown", unmuteOnFirstGesture);
 zapButton.addEventListener("click", () => channel.zap());
 playbackButton.addEventListener("click", () => channel.togglePlayback());
 soundButton.addEventListener("click", toggleSound);
-captionsButton.addEventListener("click", () => {
-  captionsOn = !captionsOn;
-  setCaptions(captionsOn);
-  saveCaptions(captionsOn);
-  channel.setCaptions(captionsOn);
-});
+captionsButton.addEventListener("click", toggleCaptions);
+shareButton.addEventListener("click", () => void shareChannel());
 
 fullscreenButton.hidden = !document.fullscreenEnabled;
 fullscreenButton.addEventListener("click", toggleFullscreen);
@@ -298,7 +372,7 @@ document.addEventListener("fullscreenchange", () => {
   const active = document.fullscreenElement === frame;
   frame.dataset.fullscreen = String(active);
   if (!active) screen.orientation?.unlock();
-  const label = active ? "Quitter le plein écran" : "Plein écran";
+  const label = active ? "Quitter le plein écran (F)" : "Plein écran (F)";
   fullscreenButton.setAttribute("aria-label", label);
   fullscreenButton.title = label;
 });

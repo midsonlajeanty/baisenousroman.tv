@@ -37,6 +37,12 @@ export function markWatched(
   return cycleComplete ? new Set([id]) : next;
 }
 
+export function startWith(order: readonly Video[], id: string | null): Video[] {
+  const requested = order.find((video) => video.id === id);
+  if (!requested) return [...order];
+  return [requested, ...order.filter((video) => video !== requested)];
+}
+
 export function nextIndex(index: number, catalogSize: number): number {
   return catalogSize === 0 ? 0 : (index + 1) % catalogSize;
 }
