@@ -237,9 +237,16 @@ function toggleSound(): void {
   void channel.toggleSound().then((soundOn) => setMuted(!soundOn));
 }
 
+const isPhone = window.matchMedia("(pointer: coarse) and (max-width: 940px)");
+
+async function enterFullscreen(): Promise<void> {
+  await frame.requestFullscreen();
+  if (isPhone.matches) await screen.orientation?.lock("landscape").catch(() => {});
+}
+
 function toggleFullscreen(): void {
   if (document.fullscreenElement) void document.exitFullscreen();
-  else void frame.requestFullscreen();
+  else void enterFullscreen().catch(() => {});
 }
 
 frame.addEventListener("click", () => {
@@ -274,6 +281,7 @@ fullscreenButton.addEventListener("click", toggleFullscreen);
 document.addEventListener("fullscreenchange", () => {
   const active = document.fullscreenElement === frame;
   frame.dataset.fullscreen = String(active);
+  if (!active) screen.orientation?.unlock();
   const label = active ? "Quitter le plein écran" : "Plein écran";
   fullscreenButton.setAttribute("aria-label", label);
   fullscreenButton.title = label;

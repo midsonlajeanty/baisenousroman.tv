@@ -800,7 +800,7 @@ h2 {
   }
 
   .floater--cat {
-    top: 57%;
+    top: 65%;
     bottom: auto;
     left: auto;
     right: 3%;
@@ -850,9 +850,24 @@ h2 {
     grid-row: 2;
   }
 
+  .footer {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .footer__brand {
+    align-items: center;
+  }
+
   .footer__links {
     flex-wrap: wrap;
+    justify-content: center;
     gap: 14px;
+  }
+
+  .footer__label {
+    flex-basis: 100%;
   }
 }
 
