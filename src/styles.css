@@ -626,7 +626,7 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(1100px, 100%);
+  width: min(1440px, 100%);
   margin: 0 auto;
   padding: clamp(90px, 12vh, 130px) var(--gutter) clamp(40px, 6vh, 70px);
   text-align: center;
@@ -654,7 +654,7 @@ h2 {
 
 .stats__frame {
   width: 100%;
-  height: max(70vh, 560px);
+  height: max(88vh, 720px);
   border: 1px solid rgba(30, 58, 95, 0.3);
   border-radius: 14px;
   background: var(--cream);
