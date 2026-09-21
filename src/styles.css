@@ -282,23 +282,6 @@ h2 {
   animation: rise 1.2s ease 0.3s both;
 }
 
-.screen__caption {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 16px;
-  flex-wrap: wrap;
-  padding: 0 6px 12px;
-  font-size: 13px;
-  text-align: left;
-}
-
-.screen__now {
-  min-width: 0;
-  color: var(--ink-70);
-  letter-spacing: 0.1em;
-}
-
 .screen__frame {
   position: relative;
   aspect-ratio: 16 / 9;

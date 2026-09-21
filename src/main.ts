@@ -24,7 +24,6 @@ function byId<T extends HTMLElement>(id: string): T {
 }
 
 const frame = byId("frame");
-const nowTitle = byId("now-title");
 const idleTitle = byId("idle-title");
 const idleHint = byId("idle-hint");
 const tuneInButton = byId<HTMLButtonElement>("tune-in");
@@ -160,7 +159,6 @@ function showProgram(index: number): void {
   const address = new URL(window.location.href);
   address.searchParams.set(VIDEO_PARAM, id);
   window.history.replaceState(null, "", address);
-  nowTitle.textContent = title;
   idleTitle.textContent = title;
   progressBar.style.setProperty("--progress", "0");
   renderSchedule();
@@ -239,7 +237,6 @@ const channel = createChannel(
     },
     onOffAir(reason) {
       setState("offair");
-      nowTitle.textContent = "Roman s'est absenté";
       idleTitle.textContent = "ROMAN S'EST ABSENTÉ";
       idleHint.textContent = OFF_AIR_HINTS[reason];
       progressBar.style.setProperty("--progress", "0");
