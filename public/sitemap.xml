@@ -12,4 +12,16 @@
       <image:loc>https://baisenousroman.tv/og-image.png</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://baisenousroman.tv/mentions-legales</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://stats.baisenousroman.tv/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.4</priority>
+  </url>
 </urlset>
