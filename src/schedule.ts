@@ -7,13 +7,20 @@ export type Slot = {
 
 const SLOT_LABELS = ["Maintenant", "Ensuite", "Après"] as const;
 
-// Visitors join the rotation at a point that moves every half hour, so the
-// channel does not always open on the first video of the playlist.
-const ROTATION_STEP_MS = 30 * 60 * 1000;
-
-export function startIndex(catalogSize: number, now: number = Date.now()): number {
-  if (catalogSize === 0) return 0;
-  return Math.floor(now / ROTATION_STEP_MS) % catalogSize;
+export function shuffle<T>(
+  items: readonly T[],
+  avoidFirst?: (item: T) => boolean,
+  random: () => number = Math.random,
+): T[] {
+  const order = [...items];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+  if (avoidFirst && order.length > 1 && avoidFirst(order[0]!)) {
+    order.push(order.shift()!);
+  }
+  return order;
 }
 
 export function nextIndex(index: number, catalogSize: number): number {

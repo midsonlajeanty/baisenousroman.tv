@@ -1,6 +1,6 @@
 import "./styles.css";
 import { createChannel, type OffAirReason } from "./player.ts";
-import { startIndex, upcoming } from "./schedule.ts";
+import { shuffle, upcoming } from "./schedule.ts";
 import { loadCatalog } from "./videos.ts";
 
 type ScreenState = "loading" | "blocked" | "direct" | "playing" | "offair";
@@ -11,8 +11,6 @@ const OFF_AIR_HINTS: Record<OffAirReason, string> = {
   unplayable: "MÊME ROMAN NE VEUT PAS PASSER CE SOIR.",
 };
 
-// A tap that YouTube still refuses to honour gets this long before the
-// visitor is handed YouTube's own play button.
 const TUNE_IN_GRACE_MS = 1500;
 const PROGRESS_INTERVAL_MS = 1000;
 
@@ -34,8 +32,26 @@ const nav = byId("nav");
 
 const clock = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
-const catalog = loadCatalog();
-let current = startIndex(catalog.length);
+const LAST_OPENING_KEY = "bnr:last-opening";
+
+function readLastOpening(): string | null {
+  try {
+    return localStorage.getItem(LAST_OPENING_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveOpening(id: string): void {
+  try {
+    localStorage.setItem(LAST_OPENING_KEY, id);
+  } catch {}
+}
+
+const lastOpening = readLastOpening();
+const catalog = shuffle(loadCatalog(), (video) => video.id === lastOpening);
+if (catalog[0]) saveOpening(catalog[0].id);
+let current = 0;
 let startedAt = Date.now();
 let remainingMs: number | null = null;
 
@@ -99,7 +115,6 @@ function showProgram(index: number): void {
 }
 
 function renderStars(): void {
-  // Seeded so the sky is the same on every visit, like the design's.
   let seed = 7;
   const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const stars = Array.from({ length: 46 }, () => {
