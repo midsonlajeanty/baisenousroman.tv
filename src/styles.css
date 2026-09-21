@@ -525,6 +525,34 @@ h2 {
   display: block;
 }
 
+.screen__sound-hint {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid rgba(232, 176, 75, 0.6);
+  border-radius: 999px;
+  background: rgba(6, 12, 28, 0.6);
+  backdrop-filter: blur(6px);
+  color: var(--paper);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -8px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+[data-state="playing"][data-muted="true"] .screen__sound-hint {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 [data-muted="true"] .screen__control--sound {
   border-color: var(--gold);
   color: var(--gold);
@@ -868,6 +896,12 @@ h2 {
     box-shadow:
       0 30px 60px -30px rgba(30, 58, 95, 0.55),
       0 0 0 5px rgba(255, 255, 255, 0.35);
+  }
+
+  .screen__sound-hint {
+    top: 10px;
+    padding: 6px 12px;
+    font-size: 10px;
   }
 
   .screen__controls {
