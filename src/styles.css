@@ -227,6 +227,10 @@ h2 {
   white-space: nowrap;
 }
 
+.nav__source {
+  display: flex;
+}
+
 .nav__links {
   display: flex;
   align-items: center;
@@ -737,15 +741,6 @@ h2 {
 
 .footer__motto {
   letter-spacing: 0.06em;
-}
-
-.footer__source {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  letter-spacing: 0.06em;
-  color: rgba(30, 58, 95, 0.6);
 }
 
 .footer__links {
