@@ -48,9 +48,10 @@ secrets: `YOUTUBE_API_KEY` and `YOUTUBE_PLAYLIST_ID`.
   exposed.
 - Deleted, private or non-embeddable videos are skipped. When no video in the
   catalog can play, or the IFrame API does not load, the screen goes off air.
-- Each visit shuffles the catalog into its own running order and never opens
-  on the video the previous visit opened on (remembered in `localStorage`),
-  so a refresh always changes the channel.
+- Each visit shuffles the catalog into its own running order. Videos the
+  visitor already watched (remembered in `localStorage`) go to the back, so
+  nothing airs twice for them before the whole catalog has; the history
+  resets once every video has been watched.
 
 ## Deployment
 
