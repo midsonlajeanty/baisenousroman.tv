@@ -23,6 +23,7 @@
   --display: "Climate Crisis", "Arial Black", sans-serif;
   --sans: "Instrument Sans", system-ui, sans-serif;
   --gutter: clamp(16px, 4vw, 48px);
+  --footer-space: 26px;
 
   color-scheme: light;
 }
@@ -931,9 +932,9 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px 24px;
+  gap: var(--footer-space) 24px;
   flex-wrap: wrap;
-  padding: 26px var(--gutter);
+  padding: var(--footer-space) var(--gutter) 0;
   border-top: 1px solid var(--ink-20);
   font-size: 12px;
   letter-spacing: 0.14em;
@@ -947,9 +948,11 @@ h2 {
 }
 
 .footer__legal {
-  flex-basis: 100%;
-  padding-top: 14px;
-  border-top: 1px solid rgba(30, 58, 95, 0.12);
+  flex: none;
+  width: calc(100% + 2 * var(--gutter));
+  margin-inline: calc(-1 * var(--gutter));
+  padding: var(--footer-space) var(--gutter);
+  border-top: 1px solid var(--ink-20);
   font-size: 11px;
   letter-spacing: 0.08em;
   text-align: center;
@@ -1012,11 +1015,11 @@ h2 {
   }
 
   .floater--cat {
-    top: 65%;
+    top: 62.4%;
     bottom: auto;
     left: auto;
     right: 3%;
-    width: 52px;
+    width: 46px;
   }
 
   .floater--tv,
@@ -1072,7 +1075,12 @@ h2 {
   .footer {
     flex-direction: column;
     justify-content: center;
+    row-gap: 14px;
     text-align: center;
+  }
+
+  .footer__legal {
+    margin-top: calc(var(--footer-space) - 14px);
   }
 
   .footer__brand {
