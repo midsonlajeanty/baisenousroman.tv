@@ -565,6 +565,50 @@ h2 {
   transition: transform 1s linear;
 }
 
+.stats {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: clamp(90px, 12vh, 130px) var(--gutter) clamp(40px, 6vh, 70px);
+  text-align: center;
+}
+
+.stats__title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(36px, 7vw, 96px);
+  line-height: 1;
+  color: var(--ink);
+  text-shadow: 0 6px 0 rgba(255, 255, 255, 0.4);
+  animation: rise 1.1s ease both;
+}
+
+.stats__lead {
+  margin: 18px 0 clamp(28px, 4vh, 48px);
+  font-size: clamp(12px, 1.3vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(30, 58, 95, 0.75);
+}
+
+.stats__frame {
+  width: 100%;
+  height: max(70vh, 560px);
+  border: 1px solid rgba(30, 58, 95, 0.3);
+  border-radius: 14px;
+  background: var(--cream);
+  box-shadow:
+    0 40px 90px -30px rgba(30, 58, 95, 0.55),
+    0 0 0 8px rgba(255, 255, 255, 0.35);
+  animation: rise 1.2s ease 0.2s both;
+}
+
 .programme {
   position: relative;
   z-index: 10;

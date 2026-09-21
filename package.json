@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "tsc && tsc -p scripts && vp build",
+    "build": "tsc && tsc -p scripts && tsc -p worker && vp build",
     "preview": "vp preview",
     "sync": "bun scripts/sync-youtube.ts",
     "prepare": "vp config"
