@@ -9,7 +9,14 @@ export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
-  fmt: {},
+  fmt: {
+    overrides: [
+      {
+        files: ["*.json", "*.jsonc", "*.json5", "*.webmanifest"],
+        options: { trailingComma: "none" },
+      },
+    ],
+  },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
