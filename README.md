@@ -58,10 +58,13 @@ secrets: `YOUTUBE_API_KEY` and `YOUTUBE_PLAYLIST_ID`.
 
 ## Deployment
 
-Cloudflare Pages, as a static site:
+Cloudflare Workers static assets, built from the GitHub repository:
 
-- Build command: `bun install && bun run build`
-- Output directory: `dist`
+- Build command: `bun run build`
+- Deploy command: `bunx wrangler deploy` (`npx` refuses the `devEngines`
+  entry that pins bun)
+- Build variable: `BUN_VERSION=1.4.2`, the version that wrote `bun.lock`
 
-`public/_headers` sets the Content Security Policy (YouTube scripts and frames
-only) and long-lived caching for hashed assets.
+`wrangler.jsonc` serves `dist/`; its `name` must match the Worker name in the
+Cloudflare dashboard. `public/_headers` sets the Content Security Policy
+(YouTube scripts and frames only) and long-lived caching for hashed assets.
