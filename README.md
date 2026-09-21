@@ -58,13 +58,13 @@ secrets: `YOUTUBE_API_KEY` and `YOUTUBE_PLAYLIST_ID`.
 
 ## Stats
 
-`stats.baisenousroman.tv` shows the public Umami dashboard inside a page styled
-like the channel. `worker/index.ts` relays only the shared dashboard (the share
-page, its API calls for this website and its static files) from
-`analytics.karakoapps.online`, so the dashboard is same-origin and Umami's
-`frame-ancestors 'self'` allows it. Every other Umami path, login and admin
-included, returns 404 on this subdomain. `SHARE_ID` and `WEBSITE_ID` in the
-worker must change if the share link is regenerated.
+`stats.baisenousroman.tv` shows the public Umami dashboard in a frame, inside a
+page styled like the channel; `worker/index.ts` only maps the subdomain root to
+`stats.html`. The official Umami image bakes `frame-ancestors 'self'` at build
+time, so a Cloudflare Transform Rule (Modify Response Header, "Set static") on
+`analytics.karakoapps.online/share/…` replaces its Content Security Policy with
+one that allows `https://stats.baisenousroman.tv`. Regenerating the share link
+means updating that rule and the frame URL in `stats.html`.
 
 ## Deployment
 
