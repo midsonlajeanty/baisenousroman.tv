@@ -4,8 +4,15 @@ import { nextIndex } from "./schedule.ts";
 
 const ENDED = 0;
 const PLAYING = 1;
+const CAPTION_MODULES = ["captions", "cc"] as const;
+const PREFERRED_CAPTIONS = "fr";
+
+type CaptionTrack = {
+  languageCode: string;
+};
 const UNPLAYABLE_ERRORS = new Set([2, 5, 100, 101, 150]);
 
+const SOUND_AUTOPLAY_GRACE_MS = 2500;
 const AUTOPLAY_GRACE_MS = 4000;
 const API_TIMEOUT_MS = 15000;
 
@@ -26,7 +33,9 @@ export type Timing = {
 export type Channel = {
   tuneIn: () => void;
   zap: () => void;
+  setCaptions: (on: boolean) => void;
   toggleSound: () => Promise<boolean>;
+  unmute: () => Promise<void>;
   timing: () => Promise<Timing>;
 };
 
@@ -35,18 +44,22 @@ export function createChannel(
   catalog: readonly Video[],
   firstIndex: number,
   events: ChannelEvents,
+  captionsInitiallyOn = false,
 ): Channel {
   if (catalog.length === 0) {
     events.onOffAir("empty");
     return {
       tuneIn: () => {},
       zap: () => {},
+      setCaptions: () => {},
       toggleSound: async () => false,
+      unmute: async () => {},
       timing: async () => ({ current: 0, duration: 0 }),
     };
   }
 
   let index = firstIndex;
+  let captionsOn = captionsInitiallyOn;
   let failuresInARow = 0;
   let ready = false;
   let autoplayTimer: number | undefined;
@@ -73,6 +86,16 @@ export function createChannel(
     events.onProgramChange(index);
     void player.loadVideoById(catalog[index]!.id);
     window.clearTimeout(autoplayTimer);
+    autoplayTimer = window.setTimeout(() => void fallBackToMuted(), SOUND_AUTOPLAY_GRACE_MS);
+  }
+
+  async function fallBackToMuted(): Promise<void> {
+    if (await player.isMuted()) {
+      events.onNeedsStart();
+      return;
+    }
+    await player.mute();
+    await player.playVideo();
     autoplayTimer = window.setTimeout(events.onNeedsStart, AUTOPLAY_GRACE_MS);
   }
 
@@ -92,11 +115,30 @@ export function createChannel(
     void player.getIframe().then((iframe) => {
       iframe.title = "Diffusion";
     });
-    void player.mute().then(() => broadcast(index));
+    void player.unMute().then(() => broadcast(index));
   });
+
+  async function showCaptions(): Promise<void> {
+    const tracks = (await player.getOption("captions", "tracklist")) as CaptionTrack[] | undefined;
+    const track =
+      tracks?.find((candidate) => candidate.languageCode.startsWith(PREFERRED_CAPTIONS)) ??
+      tracks?.[0];
+    if (track) await player.setOption("captions", "track", { languageCode: track.languageCode });
+  }
+
+  function applyCaptions(): void {
+    if (captionsOn) {
+      void showCaptions();
+      return;
+    }
+    for (const module of CAPTION_MODULES) void player.setOption(module, "track", {});
+  }
+
+  player.on("apiChange", applyCaptions);
 
   player.on("stateChange", (event) => {
     if (event.data === PLAYING) {
+      applyCaptions();
       failuresInARow = 0;
       window.clearTimeout(autoplayTimer);
       void player.isMuted().then(events.onPlaying);
@@ -118,10 +160,17 @@ export function createChannel(
     zap() {
       broadcast(nextIndex(index, catalog.length));
     },
+    setCaptions(on) {
+      captionsOn = on;
+      applyCaptions();
+    },
     async toggleSound() {
       const muted = await player.isMuted();
       await (muted ? player.unMute() : player.mute());
       return muted;
+    },
+    async unmute() {
+      await player.unMute();
     },
     async timing() {
       const [current, duration] = await Promise.all([

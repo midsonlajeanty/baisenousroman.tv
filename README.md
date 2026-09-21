@@ -41,8 +41,11 @@ secrets: `YOUTUBE_API_KEY` and `YOUTUBE_PLAYLIST_ID`.
 
 ## Playback
 
-- The channel starts muted, because browsers only allow autoplay without
-  sound, and offers a sound toggle on the screen.
+- The channel starts with sound. When the browser refuses autoplay with sound,
+  it falls back to muted autoplay and turns the sound on at the visitor's
+  first click or key press anywhere on the page.
+- Captions are off by default; the captions button turns them on (French
+  track first) and the choice is remembered.
 - If even muted autoplay is refused, the screen asks the visitor to join the
   broadcast; if a tap still cannot start it, YouTube's own play button is
   exposed.

@@ -28,6 +28,7 @@ const tuneInButton = byId<HTMLButtonElement>("tune-in");
 const soundButton = byId<HTMLButtonElement>("sound");
 const zapButton = byId<HTMLButtonElement>("zap");
 const fullscreenButton = byId<HTMLButtonElement>("fullscreen");
+const captionsButton = byId<HTMLButtonElement>("captions");
 const controls = byId("controls");
 const progressBar = byId("progress");
 const scheduleList = byId<HTMLOListElement>("schedule");
@@ -55,6 +56,24 @@ function saveWatched(ids: ReadonlySet<string>): void {
   } catch {}
 }
 
+const CAPTIONS_KEY = "bnr:captions";
+
+function readCaptions(): boolean {
+  try {
+    return localStorage.getItem(CAPTIONS_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+function saveCaptions(on: boolean): void {
+  try {
+    localStorage.setItem(CAPTIONS_KEY, on ? "on" : "off");
+  } catch {}
+}
+
+let captionsOn = readCaptions();
+
 const fullCatalog = loadCatalog();
 let watched = readWatched();
 const catalog = programmeOrder(fullCatalog, watched);
@@ -71,6 +90,14 @@ function setMuted(muted: boolean): void {
   const label = muted ? "Activer le son" : "Couper le son";
   soundButton.setAttribute("aria-label", label);
   soundButton.title = label;
+}
+
+function setCaptions(on: boolean): void {
+  frame.dataset.captions = String(on);
+  const label = on ? "Désactiver les sous-titres" : "Activer les sous-titres";
+  captionsButton.setAttribute("aria-pressed", String(on));
+  captionsButton.setAttribute("aria-label", label);
+  captionsButton.title = label;
 }
 
 function renderSchedule(): void {
@@ -160,37 +187,44 @@ function dimNavOnScroll(): void {
 renderStars();
 dimNavOnScroll();
 setMuted(true);
+setCaptions(captionsOn);
 
 if (catalog.length > 0) showProgram(current);
 else renderSchedule();
 
-const channel = createChannel(byId("player"), catalog, current, {
-  onProgramChange(index) {
-    setState("loading");
-    idleHint.textContent = "RÉGLAGE DE L'ANTENNE";
-    showProgram(index);
+const channel = createChannel(
+  byId("player"),
+  catalog,
+  current,
+  {
+    onProgramChange(index) {
+      setState("loading");
+      idleHint.textContent = "RÉGLAGE DE L'ANTENNE";
+      showProgram(index);
+    },
+    onPlaying(muted) {
+      setState("playing");
+      setMuted(muted);
+      const video = catalog[current];
+      if (video && !watched.has(video.id)) {
+        watched = markWatched(watched, video.id, fullCatalog);
+        saveWatched(watched);
+      }
+    },
+    onNeedsStart() {
+      setState("blocked");
+      idleHint.textContent = "APPUYEZ POUR ALLUMER LA CHAÎNE";
+    },
+    onOffAir(reason) {
+      setState("offair");
+      nowTitle.textContent = "Hors antenne";
+      idleTitle.textContent = "HORS ANTENNE";
+      idleHint.textContent = OFF_AIR_HINTS[reason];
+      progressBar.style.setProperty("--progress", "0");
+    },
   },
-  onPlaying(muted) {
-    setState("playing");
-    setMuted(muted);
-    const video = catalog[current];
-    if (video && !watched.has(video.id)) {
-      watched = markWatched(watched, video.id, fullCatalog);
-      saveWatched(watched);
-    }
-  },
-  onNeedsStart() {
-    setState("blocked");
-    idleHint.textContent = "APPUYEZ POUR ALLUMER LA CHAÎNE";
-  },
-  onOffAir(reason) {
-    setState("offair");
-    nowTitle.textContent = "Hors antenne";
-    idleTitle.textContent = "HORS ANTENNE";
-    idleHint.textContent = OFF_AIR_HINTS[reason];
-    progressBar.style.setProperty("--progress", "0");
-  },
-});
+  captionsOn,
+);
 
 function tuneIn(): void {
   channel.tuneIn();
@@ -215,8 +249,25 @@ frame.addEventListener("click", () => {
 });
 
 controls.addEventListener("click", (event) => event.stopPropagation());
+
+function unmuteOnFirstGesture(event: Event): void {
+  if (frame.contains(event.target as Node)) return;
+  if (frame.dataset.state !== "playing" || frame.dataset.muted !== "true") return;
+  document.removeEventListener("pointerdown", unmuteOnFirstGesture);
+  document.removeEventListener("keydown", unmuteOnFirstGesture);
+  void channel.unmute().then(() => setMuted(false));
+}
+
+document.addEventListener("pointerdown", unmuteOnFirstGesture);
+document.addEventListener("keydown", unmuteOnFirstGesture);
 zapButton.addEventListener("click", () => channel.zap());
 soundButton.addEventListener("click", toggleSound);
+captionsButton.addEventListener("click", () => {
+  captionsOn = !captionsOn;
+  setCaptions(captionsOn);
+  saveCaptions(captionsOn);
+  channel.setCaptions(captionsOn);
+});
 
 fullscreenButton.hidden = !document.fullscreenEnabled;
 fullscreenButton.addEventListener("click", toggleFullscreen);
