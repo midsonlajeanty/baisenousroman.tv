@@ -1,7 +1,7 @@
 {
   "name": "BAISE NOUS ROMAN.TV",
   "short_name": "ROMAN.TV",
-  "description": "La chaîne qui ne diffuse que Roman Frayssinet.",
+  "description": "Le site qui ne diffuse que Roman Frayssinet.",
   "lang": "fr",
   "start_url": "/",
   "display": "standalone",

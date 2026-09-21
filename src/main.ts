@@ -217,7 +217,7 @@ const channel = createChannel(
   {
     onProgramChange(index) {
       setState("loading");
-      idleHint.textContent = "RÉGLAGE DE L'ANTENNE";
+      idleHint.textContent = "ROMAN ARRIVE";
       showProgram(index);
     },
     onPaused() {
@@ -235,12 +235,12 @@ const channel = createChannel(
     },
     onNeedsStart() {
       setState("blocked");
-      idleHint.textContent = "APPUYEZ POUR ALLUMER LA CHAÎNE";
+      idleHint.textContent = "APPUYEZ, ROMAN VOUS ATTEND";
     },
     onOffAir(reason) {
       setState("offair");
-      nowTitle.textContent = "Hors antenne";
-      idleTitle.textContent = "HORS ANTENNE";
+      nowTitle.textContent = "Roman s'est absenté";
+      idleTitle.textContent = "ROMAN S'EST ABSENTÉ";
       idleHint.textContent = OFF_AIR_HINTS[reason];
       progressBar.style.setProperty("--progress", "0");
     },
@@ -298,7 +298,7 @@ async function shareChannel(): Promise<void> {
   if (video) url.searchParams.set(VIDEO_PARAM, video.id);
   const text = video
     ? `« ${video.title} » passe sur ${SITE_NAME}. Il va vous avoir aussi.`
-    : `${SITE_NAME}, la chaîne qui ne diffuse que Roman Frayssinet.`;
+    : `${SITE_NAME}, le site qui ne diffuse que Roman Frayssinet.`;
 
   if (navigator.share) {
     try {
@@ -331,6 +331,7 @@ const SHORTCUTS: Record<string, () => void> = {
   f: toggleFullscreen,
   n: () => channel.zap(),
   c: toggleCaptions,
+  s: () => void shareChannel(),
 };
 
 function shortcutFor(event: KeyboardEvent): (() => void) | undefined {
