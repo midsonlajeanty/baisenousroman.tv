@@ -472,6 +472,10 @@ h2 {
   right: 14px;
   bottom: 16px;
   display: flex;
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  max-height: calc(100% - 32px);
   gap: 8px;
   opacity: 0;
   pointer-events: none;
@@ -943,9 +947,13 @@ h2 {
 }
 
 .footer__legal {
-  margin-top: 4px;
-  letter-spacing: 0.06em;
-  color: rgba(30, 58, 95, 0.6);
+  flex-basis: 100%;
+  padding-top: 14px;
+  border-top: 1px solid rgba(30, 58, 95, 0.12);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: rgba(30, 58, 95, 0.55);
 }
 
 .footer__motto {
@@ -1035,7 +1043,8 @@ h2 {
 
   .screen__controls {
     right: 10px;
-    bottom: 12px;
+    bottom: 10px;
+    max-height: calc(100% - 20px);
     gap: 6px;
   }
 
