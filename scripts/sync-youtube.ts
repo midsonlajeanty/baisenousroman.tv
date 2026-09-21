@@ -49,8 +49,6 @@ async function fetchPage(
 
   const response = await fetch(url);
   if (!response.ok) {
-    // The body carries Google's reason (quotaExceeded, playlistNotFound...);
-    // the URL is left out because it contains the key.
     throw new Error(`YouTube API ${response.status}: ${await response.text()}`);
   }
   return (await response.json()) as PlaylistItemsPage;
@@ -59,8 +57,6 @@ async function fetchPage(
 function toVideo(item: PlaylistItem): Video | null {
   const id = item.snippet?.resourceId?.videoId;
   const title = item.snippet?.title?.trim();
-  // Deleted and private entries stay in a playlist with a placeholder title
-  // and a non-public status; the embed cannot play them.
   if (!id || !title || !PLAYABLE.has(item.status?.privacyStatus ?? "")) return null;
   return { id, title: cleanTitle(title) };
 }
@@ -90,8 +86,6 @@ async function main(): Promise<void> {
   const playlistId = requireEnv("YOUTUBE_PLAYLIST_ID");
 
   const videos = await fetchPlaylist(apiKey, playlistId);
-  // Never replace a working catalog with an empty one: an empty result is far
-  // more likely a wrong playlist id than a channel that stopped broadcasting.
   if (videos.length === 0) {
     throw new Error(`Playlist ${playlistId} has no playable video, catalog left unchanged`);
   }

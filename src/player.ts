@@ -2,14 +2,10 @@ import YouTubePlayer from "youtube-player";
 import type { Video } from "./videos.ts";
 import { nextIndex } from "./schedule.ts";
 
-// IFrame API player states and error codes.
-// https://developers.google.com/youtube/iframe_api_reference
 const ENDED = 0;
 const PLAYING = 1;
 const UNPLAYABLE_ERRORS = new Set([2, 5, 100, 101, 150]);
 
-// Longer than a slow first load of the iframe API, short enough that a visitor
-// facing a blocked autoplay is not left staring at a still frame.
 const AUTOPLAY_GRACE_MS = 4000;
 const API_TIMEOUT_MS = 15000;
 
@@ -94,7 +90,6 @@ export function createChannel(
     void player.getIframe().then((iframe) => {
       iframe.title = "Diffusion en direct";
     });
-    // Browsers only allow autoplay without a gesture when the sound is off.
     void player.mute().then(() => broadcast(index));
   });
 
@@ -114,7 +109,6 @@ export function createChannel(
   });
 
   return {
-    // Must run inside a user gesture so the browser accepts sound.
     tuneIn() {
       void player.unMute();
       void player.playVideo();

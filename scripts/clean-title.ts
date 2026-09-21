@@ -1,13 +1,9 @@
-// Trailing segments that name a broadcaster, a show or a format rather than
-// the sketch itself. Short uppercase codes (KS, SF2...) are show acronyms.
 const NOISE = /^(canal\+|clique|spectacle complet|officiel|official|extrait)$/i;
 const ACRONYM = /^[A-Z0-9]{2,4}$/;
 
 const TRAILING_SEGMENT = /\s+[-–—|]\s+([^-–—|]+)$/;
 const LEADING_NAME = /^roman frayssinet\s*[-–—|:,]\s*/i;
 const TRAILING_NAME = /\s+[-–—|]\s+roman frayssinet$/i;
-// "Roman Frayssinet a mûri": the name is the subject of the sentence, so it
-// shortens to "Roman" instead of disappearing.
 const NAME_AS_SUBJECT = /^roman frayssinet\s+/i;
 
 function isNoise(segment: string): boolean {

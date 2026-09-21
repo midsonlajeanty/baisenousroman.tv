@@ -3,8 +3,6 @@ export type Video = {
   title: string;
 };
 
-// A glob instead of a static import so the site still builds, and shows the
-// off-air screen, before the first catalog sync has produced the file.
 const catalogFiles = import.meta.glob<unknown>("./data/videos.json", {
   eager: true,
   import: "default",
