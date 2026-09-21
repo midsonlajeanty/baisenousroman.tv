@@ -56,6 +56,16 @@ secrets: `YOUTUBE_API_KEY` and `YOUTUBE_PLAYLIST_ID`.
   nothing airs twice for them before the whole catalog has; the history
   resets once every video has been watched.
 
+## Stats
+
+`stats.baisenousroman.tv` shows the public Umami dashboard inside a page styled
+like the channel. `worker/index.ts` relays only the shared dashboard (the share
+page, its API calls for this website and its static files) from
+`analytics.karakoapps.online`, so the dashboard is same-origin and Umami's
+`frame-ancestors 'self'` allows it. Every other Umami path, login and admin
+included, returns 404 on this subdomain. `SHARE_ID` and `WEBSITE_ID` in the
+worker must change if the share link is regenerated.
+
 ## Deployment
 
 Cloudflare Workers static assets, built from the GitHub repository:
