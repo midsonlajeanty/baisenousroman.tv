@@ -16,6 +16,8 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -30,13 +32,42 @@ jobs:
           YOUTUBE_PLAYLIST_ID: ${{ secrets.YOUTUBE_PLAYLIST_ID }}
 
       - name: Commit the catalog if it changed
+        id: commit
         run: |
           if git diff --quiet -- src/data/videos.json; then
             echo "Catalog unchanged"
             exit 0
           fi
+          added=$(jq -r --slurpfile before <(git show HEAD:src/data/videos.json) \
+            '($before[0] | map(.id)) as $known | map(select(.id as $id | $known | index($id) | not)) | .[] | "- " + .title' \
+            src/data/videos.json)
+          {
+            echo "count=$(jq length src/data/videos.json)"
+            echo "added<<EOF"
+            echo "$added"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/data/videos.json
           git commit -m "chore(catalog): sync youtube playlist"
           git push
+
+      - name: Announce new videos on Discord
+        if: steps.commit.outputs.added != '' && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          ADDED: ${{ steps.commit.outputs.added }}
+          COUNT: ${{ steps.commit.outputs.count }}
+        run: |
+          jq -n --arg added "$ADDED" --arg count "$COUNT" \
+            '{content: ("📺 Nouvelles vidéos à l'"'"'antenne sur https://baisenousroman.tv\n" + $added + "\n\nLa grille compte maintenant " + $count + " vidéos.")}' \
+            | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
+
+      - name: Report a failed sync on Discord
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -n --arg url "$RUN_URL" \
+            '{content: ("⚠️ La synchro YouTube de baisenousroman.tv a échoué.\n" + $url)}' \
+            | curl -fsS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
