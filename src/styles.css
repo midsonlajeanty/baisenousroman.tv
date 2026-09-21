@@ -528,6 +528,11 @@ h2 {
   animation: pulse 2s ease-in-out infinite;
 }
 
+[data-captions="true"] .screen__control--captions {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 .screen__control[hidden] {
   display: none;
 }
