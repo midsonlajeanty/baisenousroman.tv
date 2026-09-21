@@ -4,6 +4,7 @@ import { nextIndex } from "./schedule.ts";
 
 const ENDED = 0;
 const PLAYING = 1;
+const PAUSED = 2;
 const CAPTION_MODULES = ["captions", "cc"] as const;
 const PREFERRED_CAPTIONS = "fr";
 
@@ -21,6 +22,7 @@ export type OffAirReason = "empty" | "unreachable" | "unplayable";
 export type ChannelEvents = {
   onProgramChange: (index: number) => void;
   onPlaying: (muted: boolean) => void;
+  onPaused: () => void;
   onNeedsStart: () => void;
   onOffAir: (reason: OffAirReason) => void;
 };
@@ -33,6 +35,7 @@ export type Timing = {
 export type Channel = {
   tuneIn: () => void;
   zap: () => void;
+  togglePlayback: () => void;
   setCaptions: (on: boolean) => void;
   toggleSound: () => Promise<boolean>;
   unmute: () => Promise<void>;
@@ -51,6 +54,7 @@ export function createChannel(
     return {
       tuneIn: () => {},
       zap: () => {},
+      togglePlayback: () => {},
       setCaptions: () => {},
       toggleSound: async () => false,
       unmute: async () => {},
@@ -142,6 +146,8 @@ export function createChannel(
       failuresInARow = 0;
       window.clearTimeout(autoplayTimer);
       void player.isMuted().then(events.onPlaying);
+    } else if (event.data === PAUSED) {
+      events.onPaused();
     } else if (event.data === ENDED) {
       broadcast(nextIndex(index, catalog.length));
     }
@@ -159,6 +165,12 @@ export function createChannel(
     },
     zap() {
       broadcast(nextIndex(index, catalog.length));
+    },
+    togglePlayback() {
+      void player.getPlayerState().then((state) => {
+        if (state === PLAYING) void player.pauseVideo();
+        else void player.playVideo();
+      });
     },
     setCaptions(on) {
       captionsOn = on;

@@ -510,6 +510,8 @@ h2 {
   stroke-linejoin: round;
 }
 
+.icon-play,
+[data-paused="true"] .icon-pause,
 .icon-sound,
 .icon-exit,
 [data-muted="false"] .icon-muted,
@@ -517,6 +519,7 @@ h2 {
   display: none;
 }
 
+[data-paused="true"] .icon-play,
 [data-muted="false"] .icon-sound,
 [data-fullscreen="true"] .icon-exit {
   display: block;

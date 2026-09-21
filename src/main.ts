@@ -27,6 +27,7 @@ const idleHint = byId("idle-hint");
 const tuneInButton = byId<HTMLButtonElement>("tune-in");
 const soundButton = byId<HTMLButtonElement>("sound");
 const zapButton = byId<HTMLButtonElement>("zap");
+const playbackButton = byId<HTMLButtonElement>("playback");
 const fullscreenButton = byId<HTMLButtonElement>("fullscreen");
 const captionsButton = byId<HTMLButtonElement>("captions");
 const controls = byId("controls");
@@ -83,6 +84,13 @@ let remainingMs: number | null = null;
 
 function setState(state: ScreenState): void {
   frame.dataset.state = state;
+}
+
+function setPaused(paused: boolean): void {
+  frame.dataset.paused = String(paused);
+  const label = paused ? "Reprendre" : "Pause";
+  playbackButton.setAttribute("aria-label", label);
+  playbackButton.title = label;
 }
 
 function setMuted(muted: boolean): void {
@@ -187,6 +195,7 @@ function dimNavOnScroll(): void {
 renderStars();
 dimNavOnScroll();
 setMuted(true);
+setPaused(false);
 setCaptions(captionsOn);
 
 if (catalog.length > 0) showProgram(current);
@@ -202,8 +211,12 @@ const channel = createChannel(
       idleHint.textContent = "RÉGLAGE DE L'ANTENNE";
       showProgram(index);
     },
+    onPaused() {
+      if (frame.dataset.state === "playing") setPaused(true);
+    },
     onPlaying(muted) {
       setState("playing");
+      setPaused(false);
       setMuted(muted);
       const video = catalog[current];
       if (video && !watched.has(video.id)) {
@@ -252,7 +265,9 @@ function toggleFullscreen(): void {
 frame.addEventListener("click", () => {
   const state = frame.dataset.state;
   if (state === "blocked") tuneIn();
-  else if (state === "playing" && frame.dataset.muted === "true") toggleSound();
+  else if (state !== "playing") return;
+  else if (frame.dataset.muted === "true") toggleSound();
+  else channel.togglePlayback();
 });
 
 controls.addEventListener("click", (event) => event.stopPropagation());
@@ -268,6 +283,7 @@ function unmuteOnFirstGesture(event: Event): void {
 document.addEventListener("pointerdown", unmuteOnFirstGesture);
 document.addEventListener("keydown", unmuteOnFirstGesture);
 zapButton.addEventListener("click", () => channel.zap());
+playbackButton.addEventListener("click", () => channel.togglePlayback());
 soundButton.addEventListener("click", toggleSound);
 captionsButton.addEventListener("click", () => {
   captionsOn = !captionsOn;
