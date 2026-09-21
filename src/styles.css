@@ -1095,6 +1095,15 @@ h2 {
     overflow: hidden;
   }
 
+  body:has(.screen__frame[data-state="playing"]) .nav {
+    display: none;
+  }
+
+  .screen:has(.screen__frame[data-state="playing"]) {
+    animation: none;
+    transform: none;
+  }
+
   .screen__frame[data-state="playing"] {
     position: fixed;
     inset: 0;
