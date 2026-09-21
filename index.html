@@ -190,8 +190,12 @@
             </noscript>
 
             <div class="screen__idle">
-              <svg class="screen__sparkle screen__sparkle--a"><use href="#sparkle" /></svg>
-              <svg class="screen__sparkle screen__sparkle--b"><use href="#sparkle" /></svg>
+              <svg class="screen__sparkle screen__sparkle--a">
+                <use href="#sparkle" />
+              </svg>
+              <svg class="screen__sparkle screen__sparkle--b">
+                <use href="#sparkle" />
+              </svg>
               <button
                 class="screen__tune"
                 id="tune-in"
@@ -204,10 +208,52 @@
               <p class="screen__hint" id="idle-hint">RÉGLAGE DE L'ANTENNE</p>
             </div>
 
-            <button class="screen__sound" id="sound" type="button" aria-pressed="false">
-              ACTIVER LE SON
-            </button>
-            <div class="screen__progress"><div id="progress"></div></div>
+            <div class="screen__controls" id="controls">
+              <button
+                class="screen__control"
+                id="zap"
+                type="button"
+                aria-label="Zapper"
+                title="Zapper"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M3 7h3.5c2 0 3.2 1 4.3 2.6l2.4 3.8c1.1 1.6 2.3 2.6 4.3 2.6H21M18 13l3 3-3 3M3 17h3.5c1.3 0 2.2-.4 3-1.1M13.5 8.1c.8-.7 1.7-1.1 3-1.1H21M18 4l3 3-3 3"
+                  />
+                </svg>
+              </button>
+              <button
+                class="screen__control screen__control--sound"
+                id="sound"
+                type="button"
+                aria-label="Activer le son"
+                title="Activer le son"
+              >
+                <svg class="icon-muted" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9h4l5-4v14l-5-4H4ZM17 9l5 6M22 9l-5 6" />
+                </svg>
+                <svg class="icon-sound" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9h4l5-4v14l-5-4H4ZM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+                </svg>
+              </button>
+              <button
+                class="screen__control"
+                id="fullscreen"
+                type="button"
+                aria-label="Plein écran"
+                title="Plein écran"
+              >
+                <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+                </svg>
+                <svg class="icon-exit" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" />
+                </svg>
+              </button>
+            </div>
+            <div class="screen__progress">
+              <div id="progress"></div>
+            </div>
           </div>
         </section>
       </header>

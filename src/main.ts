@@ -1,6 +1,6 @@
 import "./styles.css";
 import { createChannel, type OffAirReason } from "./player.ts";
-import { shuffle, upcoming } from "./schedule.ts";
+import { markWatched, programmeOrder, upcoming } from "./schedule.ts";
 import { loadCatalog } from "./videos.ts";
 
 type ScreenState = "loading" | "blocked" | "direct" | "playing" | "offair";
@@ -26,31 +26,38 @@ const idleTitle = byId("idle-title");
 const idleHint = byId("idle-hint");
 const tuneInButton = byId<HTMLButtonElement>("tune-in");
 const soundButton = byId<HTMLButtonElement>("sound");
+const zapButton = byId<HTMLButtonElement>("zap");
+const fullscreenButton = byId<HTMLButtonElement>("fullscreen");
+const controls = byId("controls");
 const progressBar = byId("progress");
 const scheduleList = byId<HTMLOListElement>("schedule");
 const nav = byId("nav");
 
-const clock = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
+const clock = new Intl.DateTimeFormat("fr-FR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
-const LAST_OPENING_KEY = "bnr:last-opening";
+const WATCHED_KEY = "bnr:watched";
 
-function readLastOpening(): string | null {
+function readWatched(): Set<string> {
   try {
-    return localStorage.getItem(LAST_OPENING_KEY);
+    const stored: unknown = JSON.parse(localStorage.getItem(WATCHED_KEY) ?? "[]");
+    return new Set(Array.isArray(stored) ? stored.filter((id) => typeof id === "string") : []);
   } catch {
-    return null;
+    return new Set();
   }
 }
 
-function saveOpening(id: string): void {
+function saveWatched(ids: ReadonlySet<string>): void {
   try {
-    localStorage.setItem(LAST_OPENING_KEY, id);
+    localStorage.setItem(WATCHED_KEY, JSON.stringify([...ids]));
   } catch {}
 }
 
-const lastOpening = readLastOpening();
-const catalog = shuffle(loadCatalog(), (video) => video.id === lastOpening);
-if (catalog[0]) saveOpening(catalog[0].id);
+const fullCatalog = loadCatalog();
+let watched = readWatched();
+const catalog = programmeOrder(fullCatalog, watched);
 let current = 0;
 let startedAt = Date.now();
 let remainingMs: number | null = null;
@@ -61,8 +68,9 @@ function setState(state: ScreenState): void {
 
 function setMuted(muted: boolean): void {
   frame.dataset.muted = String(muted);
-  soundButton.textContent = muted ? "ACTIVER LE SON" : "COUPER LE SON";
-  soundButton.setAttribute("aria-pressed", String(!muted));
+  const label = muted ? "Activer le son" : "Couper le son";
+  soundButton.setAttribute("aria-label", label);
+  soundButton.title = label;
 }
 
 function renderSchedule(): void {
@@ -165,6 +173,11 @@ const channel = createChannel(byId("player"), catalog, current, {
   onPlaying(muted) {
     setState("playing");
     setMuted(muted);
+    const video = catalog[current];
+    if (video && !watched.has(video.id)) {
+      watched = markWatched(watched, video.id, fullCatalog);
+      saveWatched(watched);
+    }
   },
   onNeedsStart() {
     setState("blocked");
@@ -186,22 +199,38 @@ function tuneIn(): void {
   }, TUNE_IN_GRACE_MS);
 }
 
-frame.addEventListener("click", (event) => {
+function toggleSound(): void {
+  void channel.toggleSound().then((soundOn) => setMuted(!soundOn));
+}
+
+function toggleFullscreen(): void {
+  if (document.fullscreenElement) void document.exitFullscreen();
+  else void frame.requestFullscreen();
+}
+
+frame.addEventListener("click", () => {
   const state = frame.dataset.state;
-  if (state === "blocked") {
-    tuneIn();
-  } else if (state === "playing" && event.target !== soundButton) {
-    void channel.toggleSound().then((soundOn) => setMuted(!soundOn));
-  }
+  if (state === "blocked") tuneIn();
+  else if (state === "playing" && frame.dataset.muted === "true") toggleSound();
+});
+
+controls.addEventListener("click", (event) => event.stopPropagation());
+zapButton.addEventListener("click", () => channel.zap());
+soundButton.addEventListener("click", toggleSound);
+
+fullscreenButton.hidden = !document.fullscreenEnabled;
+fullscreenButton.addEventListener("click", toggleFullscreen);
+document.addEventListener("fullscreenchange", () => {
+  const active = document.fullscreenElement === frame;
+  frame.dataset.fullscreen = String(active);
+  const label = active ? "Quitter le plein écran" : "Plein écran";
+  fullscreenButton.setAttribute("aria-label", label);
+  fullscreenButton.title = label;
 });
 
 tuneInButton.addEventListener("click", (event) => {
   event.stopPropagation();
   tuneIn();
-});
-
-soundButton.addEventListener("click", () => {
-  void channel.toggleSound().then((soundOn) => setMuted(!soundOn));
 });
 
 window.setInterval(() => {

@@ -25,6 +25,7 @@ export type Timing = {
 
 export type Channel = {
   tuneIn: () => void;
+  zap: () => void;
   toggleSound: () => Promise<boolean>;
   timing: () => Promise<Timing>;
 };
@@ -39,6 +40,7 @@ export function createChannel(
     events.onOffAir("empty");
     return {
       tuneIn: () => {},
+      zap: () => {},
       toggleSound: async () => false,
       timing: async () => ({ current: 0, duration: 0 }),
     };
@@ -88,7 +90,7 @@ export function createChannel(
     ready = true;
     window.clearTimeout(apiTimer);
     void player.getIframe().then((iframe) => {
-      iframe.title = "Diffusion en direct";
+      iframe.title = "Diffusion";
     });
     void player.mute().then(() => broadcast(index));
   });
@@ -112,6 +114,9 @@ export function createChannel(
     tuneIn() {
       void player.unMute();
       void player.playVideo();
+    },
+    zap() {
+      broadcast(nextIndex(index, catalog.length));
     },
     async toggleSound() {
       const muted = await player.isMuted();
