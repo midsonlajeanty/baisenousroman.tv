@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   build: {
     rolldownOptions: {
-      input: ["index.html", "stats.html"],
+      input: ["index.html", "stats.html", "404.html", "mentions-legales.html"],
     },
   },
   staged: {
