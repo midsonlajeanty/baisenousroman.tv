@@ -1098,6 +1098,24 @@ h2 {
   }
 }
 
+@media (orientation: landscape) and (max-height: 540px) and (pointer: coarse) {
+  body:has(.screen__frame[data-state="playing"]) {
+    overflow: hidden;
+  }
+
+  .screen__frame[data-state="playing"] {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100dvh;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 @keyframes drift {
   0%,
   100% {
