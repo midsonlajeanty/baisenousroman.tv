@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: sync-youtube
@@ -33,6 +34,8 @@ jobs:
 
       - name: Commit the catalog if it changed
         id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet -- src/data/videos.json; then
             echo "Catalog unchanged"
@@ -47,11 +50,17 @@ jobs:
             echo "$added"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+          branch="catalog/sync-${GITHUB_RUN_ID}"
+          message="chore(catalog): sync youtube playlist"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
           git add src/data/videos.json
-          git commit -m "chore(catalog): sync youtube playlist"
-          git push
+          git commit -m "$message"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" --title "$message" \
+            --body "Automatic catalog sync from the YouTube playlist."
+          gh pr merge "$branch" --squash --delete-branch --subject "$message"
 
       - name: Announce new videos on Discord
         if: steps.commit.outputs.added != '' && env.DISCORD_WEBHOOK_URL != ''
