@@ -33,6 +33,20 @@
     <meta name="twitter:image" content="https://baisenousroman.tv/og-image.png" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="preload"
+      href="/fonts/climate-crisis-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -214,10 +228,10 @@
             </div>
 
             <div class="screen__idle">
-              <svg class="screen__sparkle screen__sparkle--a">
+              <svg class="screen__sparkle screen__sparkle--a" width="26" height="26">
                 <use href="#sparkle" />
               </svg>
-              <svg class="screen__sparkle screen__sparkle--b">
+              <svg class="screen__sparkle screen__sparkle--b" width="20" height="20">
                 <use href="#sparkle" />
               </svg>
               <button class="screen__tune" id="tune-in" type="button" aria-label="Lancer Roman">
@@ -322,7 +336,23 @@
       <section id="programme" class="programme">
         <h2>PROGRAMME</h2>
         <p class="programme__lead">On ne choisit rien. Lui, si.</p>
-        <ol class="programme__grid" id="schedule"></ol>
+        <ol class="programme__grid" id="schedule">
+          <li class="slot slot--now">
+            <span class="slot__label">Maintenant</span>
+            <span class="slot__title">&nbsp;</span>
+            <span class="slot__time">&nbsp;</span>
+          </li>
+          <li class="slot">
+            <span class="slot__label">Ensuite</span>
+            <span class="slot__title">&nbsp;</span>
+            <span class="slot__time">&nbsp;</span>
+          </li>
+          <li class="slot">
+            <span class="slot__label">Après</span>
+            <span class="slot__title">&nbsp;</span>
+            <span class="slot__time">&nbsp;</span>
+          </li>
+        </ol>
         <p class="programme__contribute">
           Un sketch vous a eu plus que les autres ? Glissez-le dans la grille, elle se met à jour
           matin et soir.
@@ -410,7 +440,13 @@
             <path d="M14 5.5c.8 2.2 2.6 3.6 5 3.8" />
           </svg>
         </a>
-        <a class="footer__site" href="https://romanfrayssinet.fr/" target="_blank" rel="noopener">
+        <a
+          class="footer__site"
+          href="https://romanfrayssinet.fr/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Site officiel de Roman Frayssinet"
+        >
           <svg
             width="20"
             height="20"
